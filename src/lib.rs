@@ -46,6 +46,9 @@ use air::{PublicInputs, SemaphoreAir};
 mod prover;
 use prover::SemaphoreProver;
 
+#[cfg(test)]
+mod tests;
+
 // TYPE ALIASES
 // ================================================================================================
 

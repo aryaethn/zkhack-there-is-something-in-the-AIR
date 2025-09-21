@@ -120,18 +120,26 @@ impl Air for SemaphoreAir {
     fn get_assertions(&self) -> Vec<Assertion<Felt>> {
         let last_step = self.trace_length() - 1;
         vec![
+            // Merkle tree root assertions (last step)
             Assertion::single(4, last_step, self.tree_root[0]),
             Assertion::single(5, last_step, self.tree_root[1]),
             Assertion::single(6, last_step, self.tree_root[2]),
             Assertion::single(7, last_step, self.tree_root[3]),
+            // Nullifier assertions (step 7)
             Assertion::single(16, 7, self.nullifier[0]),
             Assertion::single(17, 7, self.nullifier[1]),
             Assertion::single(18, 7, self.nullifier[2]),
             Assertion::single(19, 7, self.nullifier[3]),
+            // Topic assertions (first step)
             Assertion::single(20, 0, self.topic[0]),
             Assertion::single(21, 0, self.topic[1]),
             Assertion::single(22, 0, self.topic[2]),
             Assertion::single(23, 0, self.topic[3]),
+            // Nullifier capacity assertions (first step) - fix for double-vote bug
+            Assertion::single(12, 0, Felt::new(8)),
+            Assertion::single(13, 0, Felt::ZERO),
+            Assertion::single(14, 0, Felt::ZERO),
+            Assertion::single(15, 0, Felt::ZERO),
         ]
     }
 
@@ -191,18 +199,18 @@ impl Air for SemaphoreAir {
         result.agg_constraint(3, hash_init_flag, is_zero(next[2]));
         result.agg_constraint(4, hash_init_flag, is_zero(next[3]));
 
-        result.agg_constraint(4, hash_init_flag, not_bit * are_equal(current[4], next[4]));
-        result.agg_constraint(5, hash_init_flag, not_bit * are_equal(current[5], next[5]));
-        result.agg_constraint(6, hash_init_flag, not_bit * are_equal(current[6], next[6]));
-        result.agg_constraint(7, hash_init_flag, not_bit * are_equal(current[7], next[7]));
+        result.agg_constraint(5, hash_init_flag, not_bit * are_equal(current[4], next[4]));
+        result.agg_constraint(6, hash_init_flag, not_bit * are_equal(current[5], next[5]));
+        result.agg_constraint(7, hash_init_flag, not_bit * are_equal(current[6], next[6]));
+        result.agg_constraint(8, hash_init_flag, not_bit * are_equal(current[7], next[7]));
 
-        result.agg_constraint(8, hash_init_flag, bit * are_equal(current[4], next[8]));
-        result.agg_constraint(9, hash_init_flag, bit * are_equal(current[5], next[9]));
-        result.agg_constraint(10, hash_init_flag, bit * are_equal(current[6], next[10]));
-        result.agg_constraint(11, hash_init_flag, bit * are_equal(current[7], next[11]));
+        result.agg_constraint(9, hash_init_flag, bit * are_equal(current[4], next[8]));
+        result.agg_constraint(10, hash_init_flag, bit * are_equal(current[5], next[9]));
+        result.agg_constraint(11, hash_init_flag, bit * are_equal(current[6], next[10]));
+        result.agg_constraint(12, hash_init_flag, bit * are_equal(current[7], next[11]));
 
-        // no additional constraints are imposed for nullifier hashing because we don't care what
-        // happens to nullifier columns after step 7
+        // Note: Topic carry constraints removed to avoid conflicts with Rescue hash constraints
+        // The boundary constraints ensure topic is set correctly at the beginning
 
         // enforce that values in the bit column must be binary
         result[24] = is_binary(current[24]);

@@ -110,11 +110,12 @@ impl SemaphoreProver {
                     state[3] = Felt::ZERO;
 
                     // make sure columns [16, 17, 18, 19] are the same as columns [4, 5, 6, 7],
-                    // and everything else is set to ZERO
-                    state[12] = Felt::ZERO;
-                    state[13] = Felt::ZERO;
-                    state[14] = Felt::ZERO;
-                    state[15] = Felt::ZERO;
+                    // and maintain nullifier capacity as [8, 0, 0, 0] (don't reset to zero!)
+                    // This is the fix for the double-vote bug - nullifier capacity must remain [8,0,0,0]
+                    // state[12] = Felt::ZERO;  // REMOVED - this was the bug!
+                    // state[13] = Felt::ZERO;  // REMOVED - this was the bug!
+                    // state[14] = Felt::ZERO;  // REMOVED - this was the bug!
+                    // state[15] = Felt::ZERO;  // REMOVED - this was the bug!
                     state[16] = state[4];
                     state[17] = state[5];
                     state[18] = state[6];

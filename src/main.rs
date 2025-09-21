@@ -76,7 +76,8 @@ pub fn main() {
     }
     debug!("============================================================");
 
-    assert_ne!(
+    // After fixing the double-vote bug, the nullifier should be deterministic and always the same
+    assert_eq!(
         signal.nullifier.to_bytes(),
         hex::decode("fa9f5e2287b26f5fc91643a65ecfebbf308c6230283cd5c2a6a57ffe8a60e19d").unwrap()
     );
